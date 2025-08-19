@@ -39,8 +39,21 @@ on fs
     mkdir /config/usb_gadget/g1/functions/ffs.adb
     mkdir /config/usb_gadget/g1/functions/ffs.fastboot
     mkdir /config/usb_gadget/g1/functions/ffs.mtp
+    # Добавляем mass storage функцию
+    mkdir /config/usb_gadget/g1/functions/mass_storage.0
+    mkdir /config/usb_gadget/g1/functions/mass_storage.0/lun.0
+    # Записываем атрибуты LUN
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/file /dev/block/sde1
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/cdrom 0
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/forced_eject 0
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/inquiry_string "Android"
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/nofua 1
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/removable 1
+    write /config/usb_gadget/g1/functions/mass_storage.0/lun.0/ro 0
     mkdir /config/usb_gadget/g1/configs/b.1 0777 shell shell
     mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell
+    # Добавляем mass storage в конфигурацию
+    symlink /config/usb_gadget/g1/functions/mass_storage.0 /config/usb_gadget/g1/configs/b.1/mass_storage.0
     mkdir /dev/usb-ffs 0775 shell shell
     mkdir /dev/usb-ffs/adb 0770 shell shell
     mkdir /dev/usb-ffs/mtp 0770 mtp mtp
@@ -48,6 +61,9 @@ on fs
     mkdir /dev/usb-ffs/fastboot 0770 system system
     mount functionfs fastboot /dev/usb-ffs/fastboot rmode=0770,fmode=0660,uid=1000,gid=1000
     mount functionfs mtp /dev/usb-ffs/mtp uid=2000,gid=2000
+    # Автоматически активируем mass storage
+    setprop sys.usb.config mass_storage
+    setprop sys.usb.ffs.ready 1
 
 on property:sys.usb.config=adb
     start adbd
@@ -66,7 +82,7 @@ on property:sys.usb.config=none
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/ffs.mtp
     setprop sys.usb.state ${sys.usb.config}
-    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode otg
+    
 
 on property:sys.usb.config=sideload && property:sys.usb.ffs.ready=1
     write /config/usb_gadget/g1/idProduct 0xD001
@@ -94,5 +110,11 @@ on property:sys.usb.config=fastboot && property:sys.usb.ffs.ready=1
     write /config/usb_gadget/g1/idProduct 0xD001
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "fastboot"
     symlink /config/usb_gadget/g1/functions/ffs.fastboot /config/usb_gadget/g1/configs/b.1/f1
+    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
+    setprop sys.usb.state ${sys.usb.config}
+
+on property:sys.usb.config=mass_storage && property:sys.usb.ffs.ready=1
+    write /config/usb_gadget/g1/idProduct 0x6861
+    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "mass_storage"
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
