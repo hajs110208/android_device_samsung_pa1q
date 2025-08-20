@@ -34,7 +34,34 @@ case "$1" in
         ;;
     "tail")
         echo "Following logs in real-time (Ctrl+C to stop):"
-        tail -f $LOG_DIR/auto_usb_events.log
+        if command -v tail >/dev/null 2>&1; then
+            tail -f $LOG_DIR/auto_usb_events.log
+        else
+            echo "tail command not available, showing last 20 lines:"
+            # Простая альтернатива без tail
+            if [ -f "$LOG_DIR/auto_usb_events.log" ]; then
+                # Читаем файл и показываем последние строки
+                local line_count=0
+                while IFS= read -r line; do
+                    line_count=$((line_count + 1))
+                done < "$LOG_DIR/auto_usb_events.log"
+                
+                local start_line=$((line_count - 20))
+                if [ $start_line -lt 1 ]; then
+                    start_line=1
+                fi
+                
+                local current_line=0
+                while IFS= read -r line; do
+                    current_line=$((current_line + 1))
+                    if [ $current_line -ge $start_line ]; then
+                        echo "$line"
+                    fi
+                done < "$LOG_DIR/auto_usb_events.log"
+            else
+                echo "No log file found"
+            fi
+        fi
         ;;
     "help")
         echo "Usage: $0 [command]"

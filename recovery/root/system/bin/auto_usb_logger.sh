@@ -58,14 +58,19 @@ log_usb_state() {
 log_kernel_events() {
     log_message "=== KERNEL EVENTS LOG ==="
     
-    # Логи ядра по USB
-    dmesg | grep -i -e usb -e xhci -e dwc3 -e scsi -e otg | tail -n 50 >> $DEBUG_LOG
-    
-    # Логи ядра по Type-C
-    dmesg | grep -i -e typec -e ccic -e pdic | tail -n 30 >> $DEBUG_LOG
-    
-    # Логи ядра по питанию
-    dmesg | grep -i -e vbus -e power -e charger | tail -n 20 >> $DEBUG_LOG
+            # Логи ядра по USB (с проверкой доступности dmesg)
+        if command -v dmesg >/dev/null 2>&1; then
+            # Логи ядра по USB (без tail для совместимости)
+            dmesg | grep -i -e usb -e xhci -e dwc3 -e scsi -e otg 2>/dev/null >> $DEBUG_LOG 2>/dev/null || true
+            
+            # Логи ядра по Type-C
+            dmesg | grep -i -e typec -e ccic -e pdic 2>/dev/null >> $DEBUG_LOG 2>/dev/null || true
+            
+            # Логи ядра по питанию
+            dmesg | grep -i -e vbus -e power -e charger 2>/dev/null >> $DEBUG_LOG 2>/dev/null || true
+        else
+            log_message "dmesg not available"
+        fi
 }
 
 # Функция логирования файловых систем
@@ -184,16 +189,32 @@ main_monitor() {
         if [ "$current_blocks" != "$previous_blocks" ]; then
             log_message "BLOCK DEVICE CHANGE: $previous_blocks -> $current_blocks"
             
-            # Детектируем OTG события
-            local new_devices=$(comm -13 <(echo "$previous_blocks" | tr ' ' '\n') <(echo "$current_blocks" | tr ' ' '\n'))
-            local removed_devices=$(comm -23 <(echo "$previous_blocks" | tr ' ' '\n') <(echo "$current_blocks" | tr ' ' '\n'))
+            # Детектируем OTG события (без использования comm)
+            local new_devices=""
+            local removed_devices=""
+            
+            # Проверяем новые устройства
+            for device in $current_blocks; do
+                if ! echo "$previous_blocks" | grep -q "$device"; then
+                    new_devices="$new_devices $device"
+                fi
+            done
+            
+            # Проверяем удаленные устройства
+            for device in $previous_blocks; do
+                if ! echo "$current_blocks" | grep -q "$device"; then
+                    removed_devices="$removed_devices $device"
+                fi
+            done
             
             if [ -n "$new_devices" ]; then
+                log_message "New devices detected: $new_devices"
                 detect_usb_events "otg_connect"
                 otg_connected=true
             fi
             
             if [ -n "$removed_devices" ]; then
+                log_message "Devices removed: $removed_devices"
                 detect_usb_events "otg_disconnect"
                 otg_connected=false
             fi
