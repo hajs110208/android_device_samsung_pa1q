@@ -151,6 +151,9 @@ on boot
     write /sys/class/dual_role_usb/otg_default/data_role host
     write /sys/class/dual_role_usb/otg_default/power_role source
     
+    # Автоматически запускаем USB logger
+    exec - root root -- /system/bin/auto_usb_logger.sh start
+    
 
    
 
