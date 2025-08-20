@@ -28,7 +28,15 @@
 on init
     # to cut charging battery path
     write /sys/class/power_supply/battery/siop_level 0
-	setprop sys.usb.configfs 1
+    setprop sys.usb.configfs 1
+    
+    # Принудительно устанавливаем USB-контроллер в режим хоста для OTG
+    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
+    
+    # Дополнительно принуждаем роль хоста через Type-C
+    write /sys/class/dual_role_usb/otg_default/mode dfp
+    write /sys/class/dual_role_usb/otg_default/data_role host
+    write /sys/class/dual_role_usb/otg_default/power_role source
 
 on init
     write /sys/class/backlight/panel0-backlight/brightness 200
@@ -36,7 +44,7 @@ on init
     setprop ro.twrp.vendor_boot true
     setprop ro.twrp.fastbootd 1
     setprop ro.boot.fastbootd false
-    
+хоть     
     # Принудительно устанавливаем USB-контроллер в режим хоста для OTG
     write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
 
@@ -49,6 +57,12 @@ on property:ro.boot.usbcontroller=*
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
     symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
+    
+    # Дополнительная инициализация USB-хоста после монтирования файловых систем
+    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
+    write /sys/class/dual_role_usb/otg_default/mode dfp
+    write /sys/class/dual_role_usb/otg_default/data_role host
+    write /sys/class/dual_role_usb/otg_default/power_role source
 	
 	# Mount firmware
     mkdir /vendor/firmware_mnt
@@ -107,6 +121,12 @@ on post-fs
 
 on boot
     start health-hal-2-1
+    
+    # Финальная инициализация USB-хоста после загрузки всех сервисов
+    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
+    write /sys/class/dual_role_usb/otg_default/mode dfp
+    write /sys/class/dual_role_usb/otg_default/data_role host
+    write /sys/class/dual_role_usb/otg_default/power_role source
     
 
    
