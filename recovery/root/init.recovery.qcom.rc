@@ -44,7 +44,7 @@ on init
     setprop ro.twrp.vendor_boot true
     setprop ro.twrp.fastbootd 1
     setprop ro.boot.fastbootd false
-хоть     
+   
     # Принудительно устанавливаем USB-контроллер в режим хоста для OTG
     write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
 
