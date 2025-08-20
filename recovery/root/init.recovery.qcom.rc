@@ -30,6 +30,16 @@ on init
     write /sys/class/power_supply/battery/siop_level 0
     setprop sys.usb.configfs 1
     
+    # Полное монтирование /config и /sys для диагностики
+    mount configfs configfs /config
+    mount sysfs sysfs /sys
+    
+    # Устанавливаем права доступа
+    chmod 0755 /config
+    chmod 0755 /sys
+    chown root root /config
+    chown root root /sys
+    
     # Принудительно устанавливаем USB-контроллер в режим хоста для OTG
     write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
     
@@ -57,6 +67,19 @@ on property:ro.boot.usbcontroller=*
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
     symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
+    
+    # Дополнительное монтирование файловых систем
+    mount configfs configfs /config
+    mount sysfs sysfs /sys
+    mount debugfs debugfs /sys/kernel/debug
+    
+    # Устанавливаем права доступа
+    chmod 0755 /config
+    chmod 0755 /sys
+    chmod 0755 /sys/kernel/debug
+    chown root root /config
+    chown root root /sys
+    chown root root /sys/kernel/debug
     
     # Дополнительная инициализация USB-хоста после монтирования файловых систем
     write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode host
