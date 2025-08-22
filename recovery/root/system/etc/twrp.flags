@@ -36,4 +36,5 @@
 /imagefv	emmc		/dev/block/platform/soc/1d84000.ufshc/by-name/imagefv
 
 # Removable storage
-/usb-otg	vfat		/dev/block/sde1		flags=display="USB-OTG";storage;wipeingui;removable
+/devices/platform/soc/*.ssusb/*.dwc3/xhci-hcd.*.auto*   auto                   vfat    default                                              voldmanaged=usb:auto
+/devices/platform/soc/8804000.sdhci/mmc_host*           auto                   auto    default                                              voldmanaged=sdcard:auto
