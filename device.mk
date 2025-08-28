@@ -43,3 +43,6 @@ PRODUCT_SOONG_NAMESPACES += \
 PRODUCT_COPY_FILES += \
     $(call find-copy-subdir-files,*,device/samsung/pa1q/prebuilt/modules,$(TARGET_COPY_OUT_VENDOR_RAMDISK)/lib/modules) \
     $(LOCAL_PATH)/prebuilt/fstab.qcom:$(TARGET_COPY_OUT_VENDOR_RAMDISK)/first_stage_ramdisk/fstab.qcom
+
+#twrp16 support
+PRODUCT_CHECK_PREBUILT_MAX_PAGE_SIZE := false
