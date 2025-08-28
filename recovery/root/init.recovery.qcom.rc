@@ -101,6 +101,7 @@ on post-fs
 
 on boot
     setprop sys.usb.config mtp,adb
+    write /sys/class/host_notify/usb_otg/booster ON
 
 on property:twrp.modules.loaded=true
     # Load ADSP firmware for PMIC
