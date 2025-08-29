@@ -31,13 +31,14 @@ on init
 	
 on init
     write /sys/class/backlight/panel0-backlight/brightness 200
+    setprop sys.usb.controller a600000.dwc3
     setprop sys.usb.configfs 1
     setprop ro.twrp.vendor_boot true
     setprop ro.twrp.fastbootd 1
     setprop ro.boot.fastbootd false
 
 on property:ro.boot.usbcontroller=*
-    setprop sys.usb.controller ${ro.boot.usbcontroller}
+    #setprop sys.usb.controller ${ro.boot.usbcontroller}
     wait /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode
     write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode peripheral
     wait /sys/class/udc/${ro.boot.usbcontroller} 1
@@ -49,6 +50,15 @@ on fs
 	# Mount firmware
     mkdir /vendor/firmware_mnt
     mount vfat /dev/block/bootdevice/by-name/apnhlos /vendor/firmware_mnt
+    
+    on property:twrp.modules.loaded=true
+    # Load ADSP firmware for PMIC
+    wait /sys/kernel/boot_adsp/boot
+    wait /sys/kernel/boot_adsp/ssr
+    write /sys/kernel/boot_adsp/boot 1
+    write /sys/kernel/boot_adsp/ssr 1
+    wait /sys/class/power_supply/battery
+    start health-hal-2-1
 
     # Wait for vendor partition to be available
     wait /dev/block/platform/soc/${ro.boot.bootdevice}/by-name/vendor
@@ -101,8 +111,7 @@ on post-fs
     
 
 
-on boot
-    start health-hal-2-1
+
     
 
    

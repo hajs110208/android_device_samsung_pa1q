@@ -162,6 +162,7 @@ TW_NO_REBOOT_BOOTLOADER := true
 TW_HAS_DOWNLOAD_MODE := true
 
 # vendor_boot
+TW_LOAD_VENDOR_MODULES := "cps4038-charger.ko max77775_charger.ko pca9481_charger.ko nu2111a_charger.ko sec-direct-charger.ko sec-battery.ko adsp_sleepmon.ko"
 TW_LOAD_VENDOR_BOOT_MODULES := true
 BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
 BOARD_MOVE_RECOVERY_RESOURCES_TO_VENDOR_BOOT := true
