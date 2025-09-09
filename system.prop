@@ -4,6 +4,7 @@ ro.board.platform=sun
 ro.boot.dynamic_partitions=true
 sys.usb.controller=a600000.dwc3
 ro.boot.bootdevice=1d84000.ufshc
+persist.sys.isUsbOtgEnabled=true
 
 # Battery Property
 ro.charger.enable_suspend=1
