@@ -25,8 +25,16 @@ AB_OTA_POSTINSTALL_CONFIG += \
 
 # Boot control
 PRODUCT_PACKAGES += \
+    update_engine \
+    update_engine_client \
+    update_verifier \
+    android.hardware.boot@1.2-impl-qti \
     android.hardware.boot@1.2-impl-qti.recovery \
+    android.hardware.boot@1.2-service \
     bootctrl.sun.recovery
+
+PRODUCT_PACKAGES_DEBUG += \
+  update_engine_sideload
 
 # fastbootd
 PRODUCT_PACKAGES += \
